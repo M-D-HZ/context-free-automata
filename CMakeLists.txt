@@ -7,7 +7,7 @@ add_executable(TOi main.cpp)
 
 add_executable(CFG_OPDR
         main.cpp
-        src/CFG.cpp src/CFG.h
-        src/Objects.cpp src/Objects.h
+        CFG.cpp CFG.h
+        Objects.cpp Objects.h
         )
 

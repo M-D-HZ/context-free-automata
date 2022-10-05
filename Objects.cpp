@@ -38,7 +38,7 @@ void Objects::addProductionRule(vector<Objects *> Rule) {
 
 void Objects::ProductionPrint(string VarName) {
     for(auto i:Production){
-        cout << "\t" + VarName + " -> '";
+        cout << "    " + VarName + " -> `";
         for (auto j:i){
             if (j != i.back()){
                 cout << j->Naam + " ";
@@ -48,7 +48,7 @@ void Objects::ProductionPrint(string VarName) {
             }
         }
 
-        cout << "'" << endl << endl;
+        cout << "`" << endl;
     }
 
 }

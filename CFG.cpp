@@ -77,32 +77,32 @@ void CFG::print() {
     this->sortVariables();
     this->sortTerminals();
 
-    cout << "V = \t{";
+    cout << "V = {";
     for (auto i:Variables) {
         if (i != Variables.back()){
             cout << i->getNaam() + ", ";
         }
         else{
-            cout << i->getNaam() + "}" << endl << endl;
+            cout << i->getNaam() + "}" << endl;
         }
     }
 
-    cout << "T = \t{";
+    cout << "T = {";
     for (auto i:Terminals) {
         if (i != Terminals.back()){
             cout << i->getNaam() + ", ";
         }
         else{
-            cout << i->getNaam() + "}" << endl << endl;
+            cout << i->getNaam() + "}" << endl;
         }
     }
 
-    cout << "P = \t{" << endl << endl;
+    cout << "P = {" << endl;
     for (auto i:Variables) {
         i->ProductionPrint(i->getNaam());
 
     }
-    cout << "}" << endl << endl;
+    cout << "}" << endl;
     cout << "S = " + Startsymbol->getNaam();
 }
 
