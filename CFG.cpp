@@ -67,6 +67,7 @@ CFG::CFG(const string& inputfile) {
         FindObject(i["head"])->addProductionRule(newproduction);
     }
     Startsymbol = FindObject(j["Start"]);
+
 }
 
 const vector<Objects *> &CFG::getTerminals() const {

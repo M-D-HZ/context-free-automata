@@ -4,7 +4,8 @@
 using namespace std;
 
 int main() {
-//    CFG cfg; opdr 1
+    //opdr 1
+//    CFG cfg;
 //    cfg.print();
 //    return 0;
 

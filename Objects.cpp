@@ -1,4 +1,7 @@
+#include <algorithm>
 #include "Objects.h"
+#include "fstream"
+#include "vector"
 
 using namespace std;
 
@@ -37,6 +40,7 @@ void Objects::addProductionRule(vector<Objects *> Rule) {
 }
 
 void Objects::ProductionPrint(string VarName) {
+    sort(Production.begin(), Production.end());
     for(auto i:Production){
         cout << "    " + VarName + " -> `";
         for (auto j:i){
@@ -51,12 +55,4 @@ void Objects::ProductionPrint(string VarName) {
         cout << "`" << endl;
     }
 
-}
-
-bool Objects::operator==(const string& input) const {
-    return Naam == input;
-}
-
-bool Objects::operator!=(const string& input) const {
-    return !(input == Naam);
 }
