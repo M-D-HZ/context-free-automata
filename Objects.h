@@ -34,6 +34,12 @@ public:
     void addProductionRule(vector<Objects*> Rule);
 
     void ProductionPrint(string VarName);
+
+/// OPERATOR OVERLOADS
+
+    bool operator==(const string& input) const;
+
+    bool operator!=(const string& input) const;
 };
 
 

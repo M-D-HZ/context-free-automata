@@ -1,4 +1,11 @@
 #include "CFG.h"
+#include "json.hpp"
+#include "iostream"
+#include "fstream"
+#include "iomanip"
+
+using namespace std;
+using json = nlohmann::json;
 
 CFG::CFG() {
 
@@ -29,8 +36,37 @@ CFG::CFG() {
     S->addProductionRule(NewRule);
 
     Startsymbol = S;
+}
 
+CFG::CFG(const string& inputfile) {
 
+    ifstream input(inputfile);
+
+    json j;
+    input >> j;
+    // tonen op het scherm
+//    cout << setw(4) << j << endl;
+
+    for (auto i:j["Variables"]) {
+        Objects* variable = new Objects(i, true);
+        Variables.push_back(variable);
+        Objecten.push_back(variable);
+    }
+
+    for (auto i:j["Terminals"]) {
+        Objects* terminal = new Objects(i, false);
+        Terminals.push_back(terminal);
+        Objecten.push_back(terminal);
+    }
+
+    for (auto i: j["Productions"]){
+        vector<Objects*> newproduction;
+        for (auto k:i["body"]){
+            newproduction.push_back(FindObject(k));
+        }
+        FindObject(i["head"])->addProductionRule(newproduction);
+    }
+    Startsymbol = FindObject(j["Start"]);
 }
 
 const vector<Objects *> &CFG::getTerminals() const {
@@ -133,3 +169,13 @@ void CFG::sortTerminals() {
         }
     }
 }
+
+Objects *CFG::FindObject(const string& name) {
+    for (auto i:Objecten){
+        if (i->getNaam() == name){
+            return i;
+        }
+    }
+    return nullptr;
+}
+

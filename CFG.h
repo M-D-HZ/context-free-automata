@@ -10,12 +10,14 @@ using namespace std;
 class CFG {
     vector<Objects*> Terminals;
     vector<Objects*> Variables;
+    vector<Objects*> Objecten;
     Objects* Startsymbol;
     string Result;
 public:
 /// CONSTRUCTER
 
     CFG();
+    CFG(const string& inputfile);
 
 /// SETTERS AND GETTERS
 
@@ -47,7 +49,10 @@ public:
 
     void sortTerminals();
 
+    Objects* FindObject(const string& name);
+
 };
+
 
 
 #endif //MEB_TOI_CFG_H

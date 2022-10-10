@@ -52,3 +52,11 @@ void Objects::ProductionPrint(string VarName) {
     }
 
 }
+
+bool Objects::operator==(const string& input) const {
+    return Naam == input;
+}
+
+bool Objects::operator!=(const string& input) const {
+    return !(input == Naam);
+}

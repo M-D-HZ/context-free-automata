@@ -11,3 +11,10 @@ add_executable(CFG_OPDR
         Objects.cpp Objects.h
         )
 
+add_executable(CFG_OPDR2
+        main.cpp
+        CFG.h CFG.cpp
+        Objects.h Objects.cpp
+        json.hpp
+        )
+
