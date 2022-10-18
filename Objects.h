@@ -33,8 +33,13 @@ public:
 
     void addProductionRule(vector<Objects*> Rule);
 
-    void ProductionPrint(string VarName);
+    void ProductionPrint(const string& VarName);
 
+    void Productionsort();
+
+    bool operator==(const Objects &rhs) const;
+
+    bool operator!=(const Objects &rhs) const;
 
 };
 

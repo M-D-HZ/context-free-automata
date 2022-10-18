@@ -2,7 +2,6 @@
 #include "json.hpp"
 #include "iostream"
 #include "fstream"
-#include "iomanip"
 
 using namespace std;
 using json = nlohmann::json;
@@ -53,6 +52,7 @@ CFG::CFG(const string& inputfile) {
         Objecten.push_back(variable);
     }
 
+
     for (auto i:j["Terminals"]) {
         Objects* terminal = new Objects(i, false);
         Terminals.push_back(terminal);
@@ -67,7 +67,6 @@ CFG::CFG(const string& inputfile) {
         FindObject(i["head"])->addProductionRule(newproduction);
     }
     Startsymbol = FindObject(j["Start"]);
-
 }
 
 const vector<Objects *> &CFG::getTerminals() const {
@@ -137,7 +136,6 @@ void CFG::print() {
     cout << "P = {" << endl;
     for (auto i:Variables) {
         i->ProductionPrint(i->getNaam());
-
     }
     cout << "}" << endl;
     cout << "S = " + Startsymbol->getNaam();

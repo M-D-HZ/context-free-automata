@@ -1,12 +1,10 @@
-#include <algorithm>
 #include "Objects.h"
-#include "fstream"
-#include "vector"
+#include "iostream"
+#include <vector>
 
 using namespace std;
 
 Objects::Objects(const string &naam, bool isVariable) : Naam(naam), isVariable(isVariable) {
-
 }
 
 const string &Objects::getNaam() const {
@@ -39,8 +37,8 @@ void Objects::addProductionRule(vector<Objects *> Rule) {
     }
 }
 
-void Objects::ProductionPrint(string VarName) {
-    sort(Production.begin(), Production.end());
+void Objects::ProductionPrint(const string& VarName) {
+    Productionsort();
     for(auto i:Production){
         cout << "    " + VarName + " -> `";
         for (auto j:i){
@@ -56,3 +54,28 @@ void Objects::ProductionPrint(string VarName) {
     }
 
 }
+
+void Objects::Productionsort() {
+    for (int i = 0; i < Production.size(); ++i) {
+        if(Production[i] == Production.back()){
+            return;
+        }
+        else if (Production[i].size() > Production[i+1].size()){
+            vector<Objects*> temp = Production[i];
+            Production[i] = Production[i+1];
+            Production[i+1] = temp;
+            Productionsort();
+        }
+    }
+}
+
+bool Objects::operator==(const Objects &rhs) const {
+    return Naam == rhs.Naam &&
+           isVariable == rhs.isVariable &&
+           Production == rhs.Production;
+}
+
+bool Objects::operator!=(const Objects &rhs) const {
+    return !(rhs == *this);
+}
+
