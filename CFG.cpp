@@ -6,6 +6,8 @@
 using namespace std;
 using json = nlohmann::json;
 
+bool Compare(Objects* a, Objects* b){return (*a < *b);}
+
 CFG::CFG() {
 
     Objects* BINDIGIT = new Objects("BINDIGIT", true);
@@ -110,8 +112,10 @@ void CFG::addVariable(Objects *Variable) {
 }
 
 void CFG::print() {
-    this->sortVariables();
-    this->sortTerminals();
+    sort(Variables.begin(),Variables.end(), Compare);
+    sort(Terminals.begin(),Terminals.end(), Compare);
+//    this->sortVariables();
+//    this->sortTerminals();
 
     cout << "V = {";
     for (auto i:Variables) {
@@ -135,6 +139,9 @@ void CFG::print() {
 
     cout << "P = {" << endl;
     for (auto i:Variables) {
+        vector<vector<Objects*>> k = i->getProduction();
+        sort(k.begin(),k.end());
+        i->setProduction(k);
         i->ProductionPrint(i->getNaam());
     }
     cout << "}" << endl;
@@ -177,4 +184,115 @@ Objects *CFG::FindObject(const string& name) {
     }
     return nullptr;
 }
+
+void CFG::toCNF() {
+    cout << "Original CFG:" << endl << endl;
+    print();
+    cout << endl << endl;
+    cout << "-------------------------------------" << endl << endl;
+
+    /// Eliminating epsilon productions
+
+    int OriginalAmount=0;
+    int NewAmount =0;
+    cout << ">> Eliminating epsilon productions" << endl;
+    cout << " Nullables are {";
+    for (auto i:Variables) {
+       if(IsNullable(i) && i == Variables.back()){ cout << i->getNaam() << "}" << endl; }
+       else if (IsNullable(i)){ cout << i->getNaam() << ", "; }
+       for (auto j:i->getProduction()){
+            OriginalAmount++;
+            if (j.empty()){
+                EliminateEpsilon(i);
+            }
+       }
+    }
+    for (auto i: Variables){
+        vector<vector<Objects*>> k = i->getProduction();
+        k.erase(unique(k.begin(),k.end()),k.end());
+//        sort(k.begin(),k.end());
+        i->setProduction(k);
+        i->EliminateEps();
+        for (auto j:i->getProduction()){
+            NewAmount++;
+        }
+    }
+    cout << " Created " << NewAmount << " Productions, original had " << OriginalAmount << endl << endl;
+    print();
+    cout << endl << endl;
+    cout << "-------------------------------------" << endl << endl;
+
+    /// Eliminating unit pairs
+    OriginalAmount = NewAmount;
+
+//    for (auto i: Variables){
+//        for (auto j:i->getProduction()){
+//            if (i->getNaam() == "D"){
+//                cout << "gotcha you pig";
+//            }
+//            if (j.size() == 1){
+//                EliminateUnit(i,j[0]);
+//            }
+//        }
+//    }
+//    for (auto i: Variables){
+//        i->EliminateSingles();
+//    }
+//    print();
+
+}
+
+bool CFG::IsNullable(Objects* C) {
+    for (auto i:C->getProduction()){
+        if (i.empty()){
+            return true;
+        }
+    }
+    for (auto i:C->getProduction()){
+        for (auto j:i) {
+            if (j->isVariable1() && IsNullable(j)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void CFG::EliminateEpsilon(Objects* C) {
+    vector<vector<Objects*>> test = C->getProduction();
+    for (auto i:C->getProduction()){
+        vector<Objects*> NProd;
+        vector<Objects*> ItProd = i;
+        for (int j = 0; j < i.size(); ++j) {
+            if (!i[j]->isVariable1()){
+                NProd.push_back(i[j]);
+            }
+            else if(IsNullable(i[j])){
+                ItProd.erase(ItProd.begin() + j);
+                test.push_back(ItProd);
+                ItProd = i;
+                continue;
+            }
+            else{
+                NProd.push_back(i[j]);
+            }
+        }
+        if (!NProd.empty()){
+            test.push_back(NProd);
+        }
+    }
+//    sort(test.begin(),test.end());
+    C->setProduction(test);
+}
+
+void CFG::EliminateUnit(Objects* C , Objects* D) {
+    for (auto i:D->getProduction()){
+        if (i.size() > 1){
+            C->addProductionRule(i);
+        }
+    }
+}
+
+
+
 

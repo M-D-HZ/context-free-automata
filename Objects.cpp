@@ -1,5 +1,5 @@
 #include "Objects.h"
-#include "iostream"
+#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -41,12 +41,12 @@ void Objects::ProductionPrint(const string& VarName) {
     Productionsort();
     for(auto i:Production){
         cout << "    " + VarName + " -> `";
-        for (auto j:i){
-            if (j != i.back()){
-                cout << j->Naam + " ";
+        for (int j = 0; j < i.size(); ++j) {
+            if (j != i.size()-1){
+                cout << i[j]->Naam + " ";
             }
             else{
-                cout << j->Naam;
+                cout << i[j]->Naam;
             }
         }
 
@@ -56,17 +56,50 @@ void Objects::ProductionPrint(const string& VarName) {
 }
 
 void Objects::Productionsort() {
+
     for (int i = 0; i < Production.size(); ++i) {
         if(Production[i] == Production.back()){
             return;
         }
-        else if (Production[i].size() > Production[i+1].size()){
+        else if (Production[i].size() < Production[i+1].size()){
             vector<Objects*> temp = Production[i];
             Production[i] = Production[i+1];
             Production[i+1] = temp;
             Productionsort();
         }
     }
+}
+
+void Objects::EliminateEps() {
+    for (int i = 0; i < Production.size(); ++i) {
+        if (Production[i].empty()){
+            Production.erase(Production.begin() + i);
+        }
+    }
+}
+
+void Objects::EliminateSingles() {
+    for (int i = 0; i < Production.size(); ++i) {
+        if (Production[i].size() == 1){
+            Production.erase(Production.begin() + i);
+        }
+    }
+}
+
+bool Objects::operator<(const Objects &rhs) const {
+    return Naam < rhs.Naam;
+}
+
+bool Objects::operator>(const Objects &rhs) const {
+    return rhs < *this;
+}
+
+bool Objects::operator<=(const Objects &rhs) const {
+    return !(rhs < *this);
+}
+
+bool Objects::operator>=(const Objects &rhs) const {
+    return !(*this < rhs);
 }
 
 bool Objects::operator==(const Objects &rhs) const {
@@ -78,4 +111,5 @@ bool Objects::operator==(const Objects &rhs) const {
 bool Objects::operator!=(const Objects &rhs) const {
     return !(rhs == *this);
 }
+
 

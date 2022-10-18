@@ -37,6 +37,18 @@ public:
 
     void Productionsort();
 
+    void EliminateEps();
+
+    void EliminateSingles();
+
+    bool operator<(const Objects &rhs) const;
+
+    bool operator>(const Objects &rhs) const;
+
+    bool operator<=(const Objects &rhs) const;
+
+    bool operator>=(const Objects &rhs) const;
+
     bool operator==(const Objects &rhs) const;
 
     bool operator!=(const Objects &rhs) const;

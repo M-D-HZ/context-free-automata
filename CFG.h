@@ -51,6 +51,14 @@ public:
 
     Objects* FindObject(const string& name);
 
+    void toCNF();
+
+    void EliminateEpsilon(Objects* C);
+
+    bool IsNullable(Objects* C);
+
+    void EliminateUnit(Objects* C,Objects* D);
+
 };
 
 
