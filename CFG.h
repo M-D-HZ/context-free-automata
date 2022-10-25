@@ -45,19 +45,28 @@ public:
 
     void print();
 
-    void sortVariables();
+    bool IsGen(Objects* &C);
 
-    void sortTerminals();
+    bool HasTermProd(Objects* C);
 
     Objects* FindObject(const string& name);
 
+    void EliminateProd(Objects* C);
+
+    bool Reachable(Objects* C);
+
     void toCNF();
 
-    void EliminateEpsilon(Objects* C);
+    void EliminateEpsilon(Objects* &C);
 
     bool IsNullable(Objects* C);
 
-    void EliminateUnit(Objects* C,Objects* D);
+    void EliminateUnit(vector<pair<Objects*,Objects*>> Units);
+
+    void UnitPairs(vector<pair<Objects*,Objects*>> &UP, Objects* C, Objects* D=NULL);
+
+    bool NoDuplicates(vector<pair<Objects*,Objects*>> UP, pair<Objects*,Objects*> k);
+    bool NoDuplicateProd(vector<Objects*> production,Objects* C);
 
 };
 

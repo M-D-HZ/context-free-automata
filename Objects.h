@@ -41,6 +41,8 @@ public:
 
     void EliminateSingles();
 
+    void EliminateProd(Objects* C);
+
     bool operator<(const Objects &rhs) const;
 
     bool operator>(const Objects &rhs) const;

@@ -8,6 +8,18 @@ using json = nlohmann::json;
 
 bool Compare(Objects* a, Objects* b){return (*a < *b);}
 
+bool CompareVec(vector<Objects*> a, vector<Objects*> b){
+    for (int i = 0; i < min(a.size(),b.size()); ++i) {
+        if (a[i] != b[i]){
+            return *a[i] < *b[i];
+        }
+        if (a[i] == b[i] && i == min(a.size(),b.size())-1){
+            return min(a.size(),b.size()) == b.size();
+        }
+    }
+    return false;
+}
+
 CFG::CFG() {
 
     Objects* BINDIGIT = new Objects("BINDIGIT", true);
@@ -114,8 +126,6 @@ void CFG::addVariable(Objects *Variable) {
 void CFG::print() {
     sort(Variables.begin(),Variables.end(), Compare);
     sort(Terminals.begin(),Terminals.end(), Compare);
-//    this->sortVariables();
-//    this->sortTerminals();
 
     cout << "V = {";
     for (auto i:Variables) {
@@ -140,40 +150,12 @@ void CFG::print() {
     cout << "P = {" << endl;
     for (auto i:Variables) {
         vector<vector<Objects*>> k = i->getProduction();
-        sort(k.begin(),k.end());
+        sort(k.begin(),k.end(), CompareVec);
         i->setProduction(k);
         i->ProductionPrint(i->getNaam());
     }
     cout << "}" << endl;
     cout << "S = " + Startsymbol->getNaam();
-}
-
-void CFG::sortVariables() {
-    for (int i = 0; i < Variables.size(); ++i) {
-        if(Variables[i] == Variables.back()){
-            return;
-        }
-        else if (Variables[i]->getNaam() > Variables[i+1]->getNaam()){
-            Objects* temp = Variables[i];
-            Variables[i] = Variables[i+1];
-            Variables[i+1] = temp;
-            sortVariables();
-        }
-    }
-}
-
-void CFG::sortTerminals() {
-    for (int i = 0; i < Terminals.size(); ++i) {
-        if(Terminals[i] == Terminals.back()){
-            return;
-        }
-        else if (Terminals[i]->getNaam() > Terminals[i+1]->getNaam()){
-            Objects* temp = Terminals[i];
-            Terminals[i] = Terminals[i+1];
-            Terminals[i+1] = temp;
-            sortTerminals();
-        }
-    }
 }
 
 Objects *CFG::FindObject(const string& name) {
@@ -208,11 +190,11 @@ void CFG::toCNF() {
        }
     }
     for (auto i: Variables){
-        vector<vector<Objects*>> k = i->getProduction();
-        k.erase(unique(k.begin(),k.end()),k.end());
-//        sort(k.begin(),k.end());
-        i->setProduction(k);
         i->EliminateEps();
+        vector<vector<Objects*>> k = i->getProduction();
+        sort(k.begin(),k.end());
+        k.erase(unique(k.begin(),k.end()),k.end());
+        i->setProduction(k);
         for (auto j:i->getProduction()){
             NewAmount++;
         }
@@ -224,21 +206,46 @@ void CFG::toCNF() {
 
     /// Eliminating unit pairs
     OriginalAmount = NewAmount;
+    vector<pair<Objects*,Objects*>> UnitPairen;
+    for (auto i: Variables){
+        UnitPairen.push_back({i,i});
+        UnitPairs(UnitPairen,i);
+    }
+    EliminateUnit(UnitPairen);
+    for (auto i: Variables){
+        i->EliminateSingles();
+    }
+    print();
+    cout << endl << endl;
+    cout << "-------------------------------------" << endl << endl;
 
-//    for (auto i: Variables){
-//        for (auto j:i->getProduction()){
-//            if (i->getNaam() == "D"){
-//                cout << "gotcha you pig";
-//            }
-//            if (j.size() == 1){
-//                EliminateUnit(i,j[0]);
-//            }
-//        }
-//    }
-//    for (auto i: Variables){
-//        i->EliminateSingles();
-//    }
-//    print();
+    vector<Objects*> Generating;
+    vector<Objects*> reachable;
+
+    for (int i = 0; i < Variables.size(); ++i) {
+        if (IsGen(Variables[i])){
+            Generating.push_back(Variables[i]);
+        }
+        else{
+            EliminateProd(Variables[i]);
+            i--;
+        }
+    }
+    for (auto i:Terminals){
+        Generating.push_back(i);
+    }
+    for (auto i:Generating){
+        if (Reachable(i) || i == Startsymbol){
+            reachable.push_back(i);
+        }
+        else{
+            EliminateProd(i);
+        }
+    }
+    print();
+    cout << endl << endl;
+    cout << "-------------------------------------" << endl << endl;
+
 
 }
 
@@ -258,9 +265,9 @@ bool CFG::IsNullable(Objects* C) {
     return false;
 }
 
-void CFG::EliminateEpsilon(Objects* C) {
-    vector<vector<Objects*>> test = C->getProduction();
-    for (auto i:C->getProduction()){
+void CFG::EliminateEpsilon(Objects* &C) {
+    vector<vector<Objects*>> temp = C->getProduction();
+    for (auto i:temp){
         vector<Objects*> NProd;
         vector<Objects*> ItProd = i;
         for (int j = 0; j < i.size(); ++j) {
@@ -269,7 +276,7 @@ void CFG::EliminateEpsilon(Objects* C) {
             }
             else if(IsNullable(i[j])){
                 ItProd.erase(ItProd.begin() + j);
-                test.push_back(ItProd);
+                C->addProductionRule(ItProd);
                 ItProd = i;
                 continue;
             }
@@ -278,19 +285,138 @@ void CFG::EliminateEpsilon(Objects* C) {
             }
         }
         if (!NProd.empty()){
-            test.push_back(NProd);
+            C->addProductionRule(NProd);
         }
     }
-//    sort(test.begin(),test.end());
-    C->setProduction(test);
+    temp.clear();
 }
 
-void CFG::EliminateUnit(Objects* C , Objects* D) {
-    for (auto i:D->getProduction()){
-        if (i.size() > 1){
-            C->addProductionRule(i);
+void CFG::EliminateUnit(vector<pair<Objects*,Objects*>> Units) {
+    for (auto i:Units){
+        if (i.first == i.second){
+            continue;
+        }
+        if (i.second->getNaam() == "B" && i.first->getNaam() == "D"){
+            cout << endl;
+        }
+        for (auto j:i.second->getProduction()){
+            if (j.size() == 1 && j[0]->isVariable1()){
+                for (auto k:j[0]->getProduction()) {
+                    if (NoDuplicateProd(k,i.first)){
+                        i.first->addProductionRule(k);
+                    }
+                }
+                continue;
+            }
+            if (NoDuplicateProd(j,i.first)){
+                i.first->addProductionRule(j);
+            }
         }
     }
+}
+
+void CFG::UnitPairs(vector<pair<Objects*,Objects*>> &UP, Objects* C, Objects* D) {
+    pair<Objects*,Objects*> Unit;
+    vector<vector<Objects*>> temp;
+    if (D != NULL){
+        temp = D->getProduction();
+    }
+    else{
+        temp = C->getProduction();
+    }
+    for (auto i:temp){
+        if (i.size() ==  1 && i[0]->isVariable1()){
+            Unit.first = C;
+            Unit.second = i[0];
+            if (NoDuplicates(UP,Unit)){
+                UP.push_back(Unit);
+            }
+            UnitPairs(UP,C,i[0]);
+        }
+    }
+}
+
+bool CFG::NoDuplicates(vector<pair<Objects*,Objects*>> UP, pair<Objects*,Objects*> k) {
+    for (int i = 0; i < UP.size(); ++i) {
+        if (UP[i].first == k.first && UP[i].second == k.second){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool CFG::NoDuplicateProd(vector<Objects*> production,Objects* C) {
+    for (auto i:C->getProduction()){
+        if (i == production){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool CFG::IsGen(Objects* &C) {
+    if (HasTermProd(C)){
+        return true;
+    }
+    for (auto i:C->getProduction()){
+        if (i.size() > 1){
+            for (auto j:i){
+                if (j->getNaam() == C->getNaam()){
+                    break;
+                }
+            }
+            for (auto j:i){
+                if (!HasTermProd(j)){
+                    return false;
+                }
+            }
+        }
+//        if (i.size() == 1 && i[0]->isVariable1()){
+//            IsGen(i[0]);
+//        }
+    }
+    return false;
+}
+
+bool CFG::HasTermProd(Objects* C) {
+    for (auto i:C->getProduction()){
+        for (auto j:i){
+            if (j->isVariable1()){
+                continue;
+            }
+            else{
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void CFG::EliminateProd(Objects* C) {
+    for (auto i:Variables){
+        if (i->getNaam() != C->getNaam()){
+            i->EliminateProd(C);
+        }
+    }
+    for (int i = 0; i < Variables.size(); ++i) {
+        if (Variables[i]->getNaam() == C->getNaam()){
+            Variables.erase(Variables.begin()+i);
+            break;
+        }
+    }
+}
+
+bool CFG::Reachable(Objects *C) {
+    for (auto i:Variables){
+        for (auto j:i->getProduction()){
+            for (auto k:j){
+                if (k->getNaam() == C->getNaam()){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 

@@ -38,7 +38,7 @@ void Objects::addProductionRule(vector<Objects *> Rule) {
 }
 
 void Objects::ProductionPrint(const string& VarName) {
-    Productionsort();
+//    Productionsort();
     for(auto i:Production){
         cout << "    " + VarName + " -> `";
         for (int j = 0; j < i.size(); ++j) {
@@ -80,8 +80,9 @@ void Objects::EliminateEps() {
 
 void Objects::EliminateSingles() {
     for (int i = 0; i < Production.size(); ++i) {
-        if (Production[i].size() == 1){
+        if (Production[i].size() == 1 && Production[i][0]->isVariable1()){
             Production.erase(Production.begin() + i);
+            i--;
         }
     }
 }
@@ -110,6 +111,17 @@ bool Objects::operator==(const Objects &rhs) const {
 
 bool Objects::operator!=(const Objects &rhs) const {
     return !(rhs == *this);
+}
+
+void Objects::EliminateProd(Objects *C) {
+    vector<vector<Objects*>> temp = Production;
+    for (int i = 0; i < temp.size(); ++i) {
+        for (int j = 0; j < temp[i].size(); ++j) {
+            if (temp[i][j]->getNaam() == C->getNaam()){
+                Production.erase(Production.begin()+i);
+            }
+        }
+    }
 }
 
 
