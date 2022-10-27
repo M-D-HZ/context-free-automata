@@ -243,6 +243,16 @@ void CFG::toCNF() {
     for (auto i: Variables){
         NewAmount = i->EliminateSingles(NewAmount);
     }
+    cout << "  Unit pairs: {";
+    for (auto i:UnitPairen){
+        if (i != UnitPairen.back()){
+            cout << "(" << i.first->getNaam() << ", " << i.second->getNaam() << ")" << ", ";
+        }
+        else{
+            cout << "(" << i.first->getNaam() << ", " << i.second->getNaam() << ")";
+        }
+    }
+    cout << "}" << endl;
     cout << "  Created " << NewAmount << " new productions, original had " << OriginalAmount << endl << endl;
     print();
     cout << endl << endl;
@@ -293,7 +303,7 @@ void CFG::toCNF() {
         }
     }
     cout << "}" << endl;
-    cout << " Useful symbols: {";
+    cout << "  Useful symbols: {";
     for (auto i:reachable){
         if (i != reachable.back()){
             cout << i->getNaam() << ", ";
