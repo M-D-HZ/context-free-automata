@@ -358,7 +358,8 @@ void CFG::toCNF() {
     varsize = Variables.size();
     int bodiesbroken = 0;
     for (auto i:Variables){
-        BreakBodies(i,bodiesbroken);
+        int count = 1;
+        BreakBodies(i,bodiesbroken,count);
     }
     cout << " >> Broke " << bodiesbroken << " bodies, added " << Variables.size()-varsize << " new variables" << endl;
     cout << ">>> Result CFG:" << endl<<endl;
@@ -565,20 +566,19 @@ Objects *CFG::ReplaceBody(Objects* C, vector<Objects*> &NE) {
     return N;
 }
 
-void CFG::BreakBodies(Objects* &C, int &bodies) {
-    static int count{1};
+void CFG::BreakBodies(Objects* &C, int &bodies, int &count) {
     vector<vector<Objects*>> temp = C->getProduction();
     for (auto &i:temp){
         if (i.size() > 2){
             count++;
             Objects* N = new Objects(C->getNaam() + "_" + to_string(count) , true);
-            N->addProductionRule({i[i.size()-1],i[i.size()-2]});
+            N->addProductionRule({i[i.size()-2],i[i.size()-1]});
             Variables.push_back(N);
             i[i.size()-2] = N;
             bodies++;
             i.erase(i.begin()+i.size()-1);
             C->setProduction(temp);
-            BreakBodies(C,bodies);
+            BreakBodies(C,bodies,count);
             return;
         }
     }

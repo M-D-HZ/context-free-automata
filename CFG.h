@@ -55,7 +55,7 @@ public:
 
     bool Reachable(Objects* C);
 
-    void BreakBodies(Objects* &C, int &amount);
+    void BreakBodies(Objects* &C, int &amount, int &count);
 
     Objects* ReplaceBodies(vector<Objects*> C, Objects* S, int count);
 
