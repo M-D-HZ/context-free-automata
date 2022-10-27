@@ -148,12 +148,32 @@ void CFG::print() {
     }
 
     cout << "P = {" << endl;
-    for (auto i:Variables) {
-        vector<vector<Objects*>> k = i->getProduction();
-        sort(k.begin(),k.end(), CompareVec);
-        i->setProduction(k);
-        i->ProductionPrint(i->getNaam());
+    for (auto i:Variables){
+        vector<string> temp;
+        for (auto j:i->getProduction()) {
+            string prod = "`";
+            for (int k = 0; k < j.size(); ++k) {
+                if (k == j.size()-1){
+                    prod += j[k]->getNaam();
+                }
+                else{
+                    prod += j[k]->getNaam() + " ";
+                }
+            }
+            prod += "`";
+            temp.push_back(prod);
+        }
+        sort(temp.begin(),temp.end());
+        for (auto j: temp){
+            cout << "    " + i->getNaam() + " -> " + j << endl;
+        }
     }
+//    for (auto i:Variables) {
+//        vector<vector<Objects*>> k = i->getProduction();
+//        sort(k.begin(),k.end(), CompareVec);
+//        i->setProduction(k);
+//        i->ProductionPrint(i->getNaam());
+//    }
     cout << "}" << endl;
     cout << "S = " + Startsymbol->getNaam();
 }
