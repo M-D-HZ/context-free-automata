@@ -200,7 +200,7 @@ void CFG::toCNF() {
     cout << " >> Eliminating epsilon productions" << endl;
     cout << "  Nullables are {";
     for (auto i:Variables) {
-       if(IsNullable(i) && i == Variables.back()){ cout << i->getNaam() << "}" << endl; }
+       if(IsNullable(i) && i == Variables.back()){ cout << i->getNaam() ; }
        else if (IsNullable(i)){ cout << i->getNaam() << ", "; }
        for (auto j:i->getProduction()){
             OriginalAmount++;
@@ -209,6 +209,7 @@ void CFG::toCNF() {
             }
        }
     }
+    cout << "}" << endl;
     for (auto i: Variables){
         i->EliminateEps();
         vector<vector<Objects*>> k = i->getProduction();
@@ -334,7 +335,8 @@ void CFG::toCNF() {
     for (auto i:Variables){
         BadBodies(i,NewVars);
     }
-    cout << "  Added " << varsize-Variables.size() << " new variables: {";
+    int test = Variables.size()-varsize;
+    cout << "  Added " << test << " new variables: {";
     for (auto i:NewVars){
         if (i == NewVars.back()){
             cout << i->getNaam();
@@ -372,7 +374,8 @@ bool CFG::IsNullable(Objects* C) {
     }
     for (auto i:C->getProduction()){
         for (auto j:i) {
-            if (j->isVariable1() && IsNullable(j)){
+
+            if (j->isVariable1() && j != C && IsNullable(j)){
                 return true;
             }
         }

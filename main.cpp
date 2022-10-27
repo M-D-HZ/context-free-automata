@@ -15,7 +15,11 @@ int main() {
 //    return 0;
 
 //  opdr 3
-    CFG cfg("input-cnf1.json");
+//    CFG cfg("input-cnf1.json");
+//    cfg.toCNF();
+//    return 0;
+//  opdr 3,2
+    CFG cfg("Second.json");
     cfg.toCNF();
     return 0;
 
