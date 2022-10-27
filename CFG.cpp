@@ -243,13 +243,18 @@ void CFG::toCNF() {
     for (auto i: Variables){
         NewAmount = i->EliminateSingles(NewAmount);
     }
+    vector<vector<Objects*>> Unitsort;
     cout << "  Unit pairs: {";
     for (auto i:UnitPairen){
-        if (i != UnitPairen.back()){
-            cout << "(" << i.first->getNaam() << ", " << i.second->getNaam() << ")" << ", ";
+        Unitsort.push_back({i.first,i.second});
+    }
+    sort(Unitsort.begin(),Unitsort.end(), CompareVec);
+    for (auto i:Unitsort){
+        if (i != Unitsort.back()){
+            cout << "(" << i[0]->getNaam() << ", " << i[1]->getNaam() << ")" << ", ";
         }
         else{
-            cout << "(" << i.first->getNaam() << ", " << i.second->getNaam() << ")";
+            cout << "(" << i[0]->getNaam() << ", " << i[1]->getNaam() << ")";
         }
     }
     cout << "}" << endl;
@@ -353,7 +358,7 @@ void CFG::toCNF() {
     for (auto i:Variables){
         BreakBodies(i,bodiesbroken);
     }
-    cout << " >> Broke " << bodiesbroken << " bodies, added " << Variables.size()-varsize << " new productions" << endl;
+    cout << " >> Broke " << bodiesbroken << " bodies, added " << Variables.size()-varsize << " new variables" << endl;
     cout << ">>> Result CFG:" << endl<<endl;
     print();
 
