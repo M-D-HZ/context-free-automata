@@ -165,7 +165,7 @@ void CFG::print() {
         }
         sort(temp.begin(),temp.end());
         for (auto j: temp){
-            cout << "    " + i->getNaam() + " -> " + j << endl;
+            cout << "  " + i->getNaam() + " -> " + j << endl;
         }
     }
 //    for (auto i:Variables) {
@@ -219,10 +219,9 @@ void CFG::toCNF() {
             NewAmount++;
         }
     }
-    cout << "  Created " << NewAmount << " Productions, original had " << OriginalAmount << endl << endl;
+    cout << "  Created " << NewAmount << " productions, original had " << OriginalAmount << endl << endl;
     print();
     cout << endl << endl;
-    cout << "-------------------------------------" << endl << endl;
     cout << " >> Eliminating unit pairs" << endl;
     int uprod = 0;
     for (auto i:Variables){
@@ -247,7 +246,6 @@ void CFG::toCNF() {
     cout << "  Created " << NewAmount << " new productions, original had " << OriginalAmount << endl << endl;
     print();
     cout << endl << endl;
-    cout << "-------------------------------------" << endl << endl;
     cout << " >> Eliminating useless symbols" << endl;
     vector<Objects*> Generating;
     vector<Objects*> reachable;
@@ -314,7 +312,6 @@ void CFG::toCNF() {
     cout << "  Removed " << varsize - Variables.size() << " variables, " << Tersize-Terminals.size() << " terminals and " << OriginalAmount-changeamount << " productions"<< endl << endl;
     print();
     cout << endl << endl;
-    cout << "-------------------------------------" << endl << endl;
     cout << " >> Replacing terminals in bad bodies" << endl;
     OriginalAmount = changeamount;
     vector<Objects*> NewVars;
@@ -341,7 +338,6 @@ void CFG::toCNF() {
     cout << "  Created " << changeamount << " new productions, original had " << OriginalAmount << endl << endl;
     print();
     cout << endl << endl;
-    cout << "-------------------------------------" << endl << endl;
     varsize = Variables.size();
     int bodiesbroken = 0;
     for (auto i:Variables){
