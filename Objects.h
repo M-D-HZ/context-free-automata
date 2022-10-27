@@ -39,7 +39,7 @@ public:
 
     void EliminateEps();
 
-    void EliminateSingles();
+    int EliminateSingles(int amount);
 
     void EliminateProd(Objects* C);
 

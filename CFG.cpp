@@ -177,8 +177,8 @@ void CFG::toCNF() {
 
     int OriginalAmount=0;
     int NewAmount =0;
-    cout << ">> Eliminating epsilon productions" << endl;
-    cout << " Nullables are {";
+    cout << " >> Eliminating epsilon productions" << endl;
+    cout << "  Nullables are {";
     for (auto i:Variables) {
        if(IsNullable(i) && i == Variables.back()){ cout << i->getNaam() << "}" << endl; }
        else if (IsNullable(i)){ cout << i->getNaam() << ", "; }
@@ -199,11 +199,20 @@ void CFG::toCNF() {
             NewAmount++;
         }
     }
-    cout << " Created " << NewAmount << " Productions, original had " << OriginalAmount << endl << endl;
+    cout << "  Created " << NewAmount << " Productions, original had " << OriginalAmount << endl << endl;
     print();
     cout << endl << endl;
     cout << "-------------------------------------" << endl << endl;
-
+    cout << " >> Eliminating unit pairs" << endl;
+    int uprod = 0;
+    for (auto i:Variables){
+        for (auto j:i->getProduction()){
+            if (j.size() == 1 && j[0]->isVariable1()){
+                uprod++;
+            }
+        }
+    }
+    cout << "  Found " << uprod << " unit productions" << endl;
     /// Eliminating unit pairs
     OriginalAmount = NewAmount;
     vector<pair<Objects*,Objects*>> UnitPairen;
@@ -211,16 +220,20 @@ void CFG::toCNF() {
         UnitPairen.push_back({i,i});
         UnitPairs(UnitPairen,i);
     }
-    EliminateUnit(UnitPairen);
+    NewAmount = EliminateUnit(UnitPairen,NewAmount);
     for (auto i: Variables){
-        i->EliminateSingles();
+        NewAmount = i->EliminateSingles(NewAmount);
     }
+    cout << "  Created " << NewAmount << " new productions, original had " << OriginalAmount << endl << endl;
     print();
     cout << endl << endl;
     cout << "-------------------------------------" << endl << endl;
-
+    cout << " >> Eliminating useless symbols" << endl;
     vector<Objects*> Generating;
     vector<Objects*> reachable;
+    int varsize = Variables.size();
+    int Tersize = Terminals.size();
+    OriginalAmount = NewAmount;
 
     for (int i = 0; i < Variables.size(); ++i) {
         if (IsGen(Variables[i])){
@@ -242,10 +255,81 @@ void CFG::toCNF() {
             EliminateProd(i);
         }
     }
+    cout << "  Generating symbols: {";
+    for (auto i:Generating){
+        if (i != Generating.back()){
+            cout << i->getNaam() << ", ";
+        }
+        else{
+            cout << i->getNaam();
+        }
+    }
+    cout << "}" << endl;
+    cout << "  Reachable symbols: {";
+    for (auto i:reachable){
+        if (i != reachable.back()){
+            cout << i->getNaam() << ", ";
+        }
+        else{
+            cout << i->getNaam();
+        }
+    }
+    cout << "}" << endl;
+    cout << " Useful symbols: {";
+    for (auto i:reachable){
+        if (i != reachable.back()){
+            cout << i->getNaam() << ", ";
+        }
+        else{
+            cout << i->getNaam();
+        }
+    }
+    int changeamount = 0;
+    for (auto i:Variables) {
+        for (auto j:i->getProduction()){
+            changeamount++;
+        }
+    }
+    cout << "}" << endl;
+    cout << "  Removed " << varsize - Variables.size() << " variables, " << Tersize-Terminals.size() << " terminals and " << OriginalAmount-changeamount << " productions"<< endl << endl;
     print();
     cout << endl << endl;
     cout << "-------------------------------------" << endl << endl;
-
+    cout << " >> Replacing terminals in bad bodies" << endl;
+    OriginalAmount = changeamount;
+    vector<Objects*> NewVars;
+    varsize = Variables.size();
+    for (auto i:Variables){
+        BadBodies(i,NewVars);
+    }
+    cout << "  Added " << varsize-Variables.size() << " new variables: {";
+    for (auto i:NewVars){
+        if (i == NewVars.back()){
+            cout << i->getNaam();
+        }
+        else{
+            cout << i->getNaam() << ", " ;
+        }
+    }
+    cout << "}"<< endl;
+    changeamount = 0;
+    for (auto i:Variables){
+        for (auto j:i->getProduction()){
+            changeamount++;
+        }
+    }
+    cout << "  Created " << changeamount << " new productions, original had " << OriginalAmount << endl << endl;
+    print();
+    cout << endl << endl;
+    cout << "-------------------------------------" << endl << endl;
+    varsize = Variables.size();
+    int bodiesbroken = 0;
+    for (auto i:Variables){
+        BreakBodies(i,bodiesbroken);
+    }
+    cout << " >> Broke " << bodiesbroken << " bodies, added " << Variables.size()-varsize << " new productions" << endl;
+    cout << ">>> Result CFG:" << endl<<endl;
+    print();
 
 }
 
@@ -291,28 +375,28 @@ void CFG::EliminateEpsilon(Objects* &C) {
     temp.clear();
 }
 
-void CFG::EliminateUnit(vector<pair<Objects*,Objects*>> Units) {
+int CFG::EliminateUnit(vector<pair<Objects*,Objects*>> Units, int amount) {
     for (auto i:Units){
         if (i.first == i.second){
             continue;
-        }
-        if (i.second->getNaam() == "B" && i.first->getNaam() == "D"){
-            cout << endl;
         }
         for (auto j:i.second->getProduction()){
             if (j.size() == 1 && j[0]->isVariable1()){
                 for (auto k:j[0]->getProduction()) {
                     if (NoDuplicateProd(k,i.first)){
                         i.first->addProductionRule(k);
+                        amount++;
                     }
                 }
                 continue;
             }
             if (NoDuplicateProd(j,i.first)){
                 i.first->addProductionRule(j);
+                amount++;
             }
         }
     }
+    return amount;
 }
 
 void CFG::UnitPairs(vector<pair<Objects*,Objects*>> &UP, Objects* C, Objects* D) {
@@ -417,6 +501,61 @@ bool CFG::Reachable(Objects *C) {
         }
     }
     return false;
+}
+
+void CFG::BadBodies(Objects* &C, vector<Objects*> &N) {
+    vector<vector<Objects*>> temp = C->getProduction();
+    for (auto& i:temp) {
+        for (auto &j:i){
+            if (!j->isVariable1() && i.size() > 1){
+                j = ReplaceBody(j,N);
+            }
+        }
+    }
+    C->setProduction(temp);
+
+}
+
+Objects *CFG::ReplaceBody(Objects* C, vector<Objects*> &NE) {
+    for (auto i:Variables){
+        for (auto j:i->getProduction()){
+            if (j.size() == 1 && j[0] == C){
+                return i;
+            }
+        }
+    }
+    Objects* N = new Objects("_" + C->getNaam(), true);
+    N->addProductionRule({C});
+    Variables.push_back(N);
+    NE.push_back(N);
+    return N;
+}
+
+void CFG::BreakBodies(Objects* &C, int &bodies) {
+    static int count{1};
+    vector<vector<Objects*>> temp = C->getProduction();
+    for (auto &i:temp){
+        if (i.size() > 2){
+            count++;
+            Objects* N = new Objects(C->getNaam() + "_" + to_string(count) , true);
+            N->addProductionRule({i[i.size()-1],i[i.size()-2]});
+            Variables.push_back(N);
+            i[i.size()-2] = N;
+            bodies++;
+            i.erase(i.begin()+i.size()-1);
+            C->setProduction(temp);
+            BreakBodies(C,bodies);
+            return;
+        }
+    }
+
+}
+
+Objects *CFG::ReplaceBodies(vector<Objects*> C, Objects* S, int count) {
+    Objects* N = new Objects(S->getNaam() + "_" + to_string(count) , true);
+    N->addProductionRule({C[0],C[1]});
+    Variables.push_back(N);
+    return N;
 }
 
 

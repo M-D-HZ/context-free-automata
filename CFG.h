@@ -55,13 +55,21 @@ public:
 
     bool Reachable(Objects* C);
 
+    void BreakBodies(Objects* &C, int &amount);
+
+    Objects* ReplaceBodies(vector<Objects*> C, Objects* S, int count);
+
+    void BadBodies(Objects* &C, vector<Objects*> &N);
+
+    Objects* ReplaceBody(Objects* C, vector<Objects*> &N);
+
     void toCNF();
 
     void EliminateEpsilon(Objects* &C);
 
     bool IsNullable(Objects* C);
 
-    void EliminateUnit(vector<pair<Objects*,Objects*>> Units);
+    int EliminateUnit(vector<pair<Objects*,Objects*>> Units, int amount);
 
     void UnitPairs(vector<pair<Objects*,Objects*>> &UP, Objects* C, Objects* D=NULL);
 

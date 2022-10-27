@@ -78,13 +78,15 @@ void Objects::EliminateEps() {
     }
 }
 
-void Objects::EliminateSingles() {
+int Objects::EliminateSingles(int amount) {
     for (int i = 0; i < Production.size(); ++i) {
         if (Production[i].size() == 1 && Production[i][0]->isVariable1()){
             Production.erase(Production.begin() + i);
+            amount--;
             i--;
         }
     }
+    return amount;
 }
 
 bool Objects::operator<(const Objects &rhs) const {
