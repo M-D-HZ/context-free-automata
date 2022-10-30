@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "Objects.h"
+#include <map>
 
 using namespace std;
 
@@ -38,6 +39,18 @@ public:
     void setResult(const string &result);
 
 /// EXTRA FUNCTIONS
+
+    bool accepts(string w);
+
+    vector<Objects*> CYKBasis(string a);
+
+    vector<Objects*> CYKAlgo(vector<Objects*> a);
+
+    void CYK(map<string,vector<Objects*>> &CYKTABLE,int size,string w);
+
+    bool Dupli(vector<Objects*>);
+
+    vector<Objects*> CYKCarthesis(vector<Objects*> a, vector<Objects*> b);
 
     void addTerminal(Objects* Terminal);
 

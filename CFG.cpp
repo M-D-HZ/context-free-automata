@@ -2,6 +2,8 @@
 #include "json.hpp"
 #include "iostream"
 #include "fstream"
+#include <vector>
+#include <set>
 
 using namespace std;
 using json = nlohmann::json;
@@ -590,6 +592,129 @@ Objects *CFG::ReplaceBodies(vector<Objects*> C, Objects* S, int count) {
     N->addProductionRule({C[0],C[1]});
     Variables.push_back(N);
     return N;
+}
+
+bool CFG::accepts(string w) {
+    map<string,vector<Objects*>> CYKTABLE;
+    for (auto i:w){
+        string k;k += i;
+        CYKTABLE[k] = CYKBasis(k);
+    }
+    CYK(CYKTABLE,2,w);
+    vector<int> tempmax;
+    for (int rt = 0 ; rt < w.size()+1; ++rt) {
+        int maxs = 0;
+        for (int i = 1; i < w.size() - (rt - 1); ++i) {
+            string k = w.substr(rt,i);
+            set<Objects*> temp;
+            copy(CYKTABLE[k].begin(),CYKTABLE[k].end(), inserter(temp,temp.end()));
+//            cout << k << endl;
+            if (temp.size() > maxs){
+                maxs = temp.size();
+            }
+        }
+//        cout << maxs << endl;
+        maxs = maxs+2*(maxs-1);
+        tempmax.push_back(maxs);
+    }
+    int index = 0;
+    bool acceptss = false;
+    for (int rt = w.size(); rt > 0; --rt) {
+        for (int i = 0; i < w.size()-(rt-1); ++i) {
+            string k = w.substr(i,rt);
+            set<Objects*> temp;
+            copy(CYKTABLE[k].begin(),CYKTABLE[k].end(), inserter(temp,temp.end()));
+            cout << "| {";
+            for (auto j:temp){
+                if (rt == w.size() && j->getNaam() == Startsymbol->getNaam()){
+                    acceptss = true;
+                }
+                if (j != CYKTABLE[k].back()){
+                    cout << j->getNaam() << ", ";
+                }
+                else{
+                    cout << j->getNaam();
+                }
+            }
+            cout << "}  ";
+            int currel = temp.size() + 2*(temp.size()-1);
+            if (temp.empty()){
+                currel = 0;
+            }
+            if (tempmax[index] - currel > 0){
+                int k = 1;
+                for (int j = 0; j <= tempmax[index] - currel-k; ++j) {
+                    cout << " ";
+                }
+            }
+            index++;
+        }
+        cout << "|"<< endl;
+        index = 0;
+    }
+    if (acceptss){
+        cout << "true" << endl;
+    }
+    else{
+        cout << "false" << endl;
+    }
+    return acceptss;
+}
+
+vector<Objects*> CFG::CYKBasis(string a) {
+    vector<Objects*> temp;
+    for (auto i:Variables){
+        for (auto j:i->getProduction()){
+            if (j.size() == 1 && j[0]->getNaam() == a){
+                temp.push_back(i);
+            }
+        }
+    }
+    return temp;
+}
+
+void CFG::CYK(map<string,vector<Objects*>> &CYKTABLE,int size, string w){
+    int aks = w.size();
+    if (size > w.size()){
+        return;
+    }
+    for (int i = 0; i <  w.size()-1; ++i) {
+        string k = w.substr(i,size);
+        if (k == "aab"){
+            cout << endl;
+        }
+        for (int j = 0; j < k.size()-1; ++j) {
+            string pos = k.substr(0,j+1);
+            string pos1 = k.substr(j+1,size-1);
+            vector<Objects*> temp = CYKCarthesis(CYKTABLE[pos],CYKTABLE[pos1]);
+            CYKTABLE[k].insert(CYKTABLE[k].end(),temp.begin(),temp.end());
+        }
+    }
+    size++;
+    CYK(CYKTABLE,size,w);
+}
+
+vector<Objects*> CFG::CYKCarthesis(vector<Objects*> a, vector<Objects*> b) {
+    vector<Objects*> temp;
+    for (auto i:a) {
+        for (auto j:b){
+            vector<Objects*> k = CYKAlgo({i,j});
+            temp.insert(temp.end(),k.begin(),k.end());
+        }
+    }
+    return temp;
+}
+
+vector<Objects *> CFG::CYKAlgo(vector<Objects*> a) {
+    vector<Objects*> temp;
+    for (auto i:Variables){
+        for (auto j:i->getProduction()){
+            if (j == a){
+                temp.push_back(i);
+            }
+        }
+    }
+    return temp;
 }
 
 
