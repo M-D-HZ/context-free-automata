@@ -1,5 +1,5 @@
-# TOi Machine en Berekenbaarheid
+# Context-Free Automata
 
-* Standaard CFG Geimplementeerd met sort en default constructor
+* Standaard CFG Implemented
 * CFG to CNF implemented
-* CYK Algorithm in progress
+* CYK Algorithm implemented
